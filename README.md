@@ -2,6 +2,12 @@
 
 ## R-script
 Analysis of off-chip forensic Hybeacon data
+## Setup
+Assay 1 + 
+Assay 2 + 
+Assay 3 + 
+= Combined TDR
+
 
 ##Data
 ### Analyzed Loci
