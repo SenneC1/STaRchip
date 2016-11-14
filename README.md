@@ -1,9 +1,7 @@
 # STaRchip
 
 ## R-script
-
-###Analysis of off-chip forensic Hybeacon data
- 
+Analysis of off-chip forensic Hybeacon data
  
 ###Loci
  D16S51
