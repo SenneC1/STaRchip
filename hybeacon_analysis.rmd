@@ -1,0 +1,369 @@
+---  
+title: Analysis of forensic Hybeacon data
+author: Sander Willems
+output: 
+  pdf_document:
+    toc: yes 
+    number_sections: yes
+    toc_depth: 3
+---
+
+\newpage
+
+# Pre-analysis
+First all data is downloaded and prepared.
+
+```{r}
+rm(list = ls())
+library(knitr)
+
+# Input settings
+precision = 1000
+info_file_name = "/home/sander/Documents/UGent/Genomics/Forensic/161028_Senne/allele_info.csv"
+
+# Data collection
+data = read.csv(info_file_name, stringsAsFactors = FALSE)
+```
+
+\newpage
+
+# Assay 1
+
+Assay 1 is analyzed first.
+
+## Setup
+
+All data is collected.
+
+```{r}
+# Assay 1 setup
+assay1 = data[
+  c(
+    "Allele",
+    "Population_frequency",
+    "Assay_1_TM_mean",
+    "Assay_1_TM_standard_deviation",
+    "Assay_1_callable"
+  )
+]
+assay1.callable = c(assay1["Assay_1_callable"]=="+")
+assay1.allele.name = unlist(assay1[assay1.callable, "Allele"])
+assay1.allele.frequencies = as.numeric(
+  unlist(assay1[assay1.callable, "Population_frequency"])
+)
+assay1.allele.mean = as.numeric(
+  unlist(assay1[assay1.callable, "Assay_1_TM_mean"])
+)
+assay1.allele.deviation = as.numeric(
+  unlist(assay1[assay1.callable, "Assay_1_TM_standard_deviation"])
+)
+```
+
+## Analysis
+
+All data is analyzed by checking probabilities of detection and True/False positive rates.
+
+```{r}
+# Assay 1 analysis
+assay1.range = c(
+  floor(min(assay1.allele.mean) - 5 * max(assay1.allele.deviation)),
+  ceiling(max(assay1.allele.mean) + 5 * max(assay1.allele.deviation))
+)
+assay1.x = seq(
+  assay1.range[1],
+  assay1.range[2],
+  length=(assay1.range[2] - assay1.range[1]) * precision + 1
+)
+
+assay1.allele.distribution = c()
+for (i in seq(length(assay1.allele.name))){
+  assay1.allele.distribution = c(
+    assay1.allele.distribution,
+    dnorm(
+      assay1.x,
+      mean=assay1.allele.mean[i],
+      sd=assay1.allele.deviation[i]
+    ) * assay1.allele.frequencies[i]
+  )
+}
+assay1.allele.distribution = t(
+  matrix(assay1.allele.distribution, ncol = length(assay1.allele.name))
+)
+
+assay1.probability.detection = apply(
+  assay1.allele.distribution, 2, function(y) sum(y)
+)
+
+assay1.probability.sensitivity = apply(
+  assay1.allele.distribution, 2, function(a) max(a)/sum(a)
+)
+
+assay1.probabilities.allele.best = apply(
+  assay1.allele.distribution,
+  2,
+  function(x) assay1.allele.name[which(x == max(x), arr.ind=TRUE)]
+)
+
+assay1.allele.tpr = c()
+for (i in seq(length(assay1.allele.name))){
+  assay1.allele.tpr = c(
+    assay1.allele.tpr,
+    sum(
+      assay1.allele.distribution[
+        i,
+        assay1.probabilities.allele.best == assay1.allele.name[i]
+      ]
+    ) / (assay1.allele.frequencies[i]*1000)
+  )
+}
+
+assay1.tpr = sum(assay1.allele.tpr * assay1.allele.frequencies)
+```
+
+## Results
+
+All results are plotted
+
+```{r}
+# Assay 1 results
+plot(
+  assay1.x,
+  assay1.probability.detection,
+  type="l",
+  col="black",
+  ylim=c(0,1),
+  xlab="TM",
+  ylab="Probability"
+)
+title("Assay 1", line=3)
+axis(assay1.allele.name, at=assay1.allele.mean, side=3)
+mtext("Allele", side=3, line=2)
+lines(assay1.x, assay1.probability.sensitivity, type="l", col="purple")
+legend("topright", 
+       legend=c("Allele detection", "Allele called correctly"), 
+       text.col=c("black", "purple")
+)
+```
+
+\newpage
+
+# Assay 2
+
+Assay 2 is then analyzed.
+
+## Setup
+
+All data is collected.
+
+
+```{r}
+# Assay 2 setup
+assay2 = data[
+  c(
+    "Allele",
+    "Population_frequency",
+    "Assay_2_TM_mean",
+    "Assay_2_TM_standard_deviation",
+    "Assay_2_callable"
+  )
+]
+assay2.callable = c(assay2["Assay_2_callable"]=="+")
+assay2.allele.name = unlist(assay1[assay2.callable, "Allele"])
+assay2.allele.frequencies = as.numeric(
+  unlist(assay2[assay2.callable, "Population_frequency"])
+)
+assay2.allele.mean = as.numeric(
+  unlist(assay2[assay2.callable, "Assay_2_TM_mean"])
+)
+assay2.allele.deviation = as.numeric(
+  unlist(assay2[assay2.callable, "Assay_2_TM_standard_deviation"])
+)
+```
+
+## Analysis
+
+All data is analyzed by checking probabilities of detection and True/False positive rates.
+
+```{r}
+# Assay 2 analysis
+assay2.range = c(
+  floor(min(assay2.allele.mean) - 5 * max(assay2.allele.deviation)),
+  ceiling(max(assay2.allele.mean) + 5 * max(assay2.allele.deviation))
+)
+assay2.x = seq(
+  assay2.range[1],
+  assay2.range[2],
+  length=(assay2.range[2] - assay2.range[1]) * precision + 1
+)
+
+assay2.allele.distribution = c()
+for (i in seq(length(assay2.allele.name))){
+  assay2.allele.distribution = c(
+    assay2.allele.distribution,
+    dnorm(
+      assay2.x,
+      mean=assay2.allele.mean[i],
+      sd=assay2.allele.deviation[i]
+    ) * assay2.allele.frequencies[i]
+  )
+}
+assay2.allele.distribution = t(
+  matrix(assay2.allele.distribution, ncol = length(assay2.allele.name))
+)
+
+assay2.probability.detection = apply(
+  assay2.allele.distribution, 2, function(y) sum(y)
+)
+
+assay2.probability.sensitivity = apply(
+  assay2.allele.distribution, 2, function(a) max(a)/sum(a)
+)
+
+assay2.probabilities.allele.best = apply(
+  assay2.allele.distribution,
+  2,
+  function(x) assay2.allele.name[which(x == max(x), arr.ind=TRUE)]
+)
+
+assay2.allele.tpr = c()
+for (i in seq(length(assay2.allele.name))){
+  assay2.allele.tpr = c(
+    assay2.allele.tpr,
+    sum(
+      assay2.allele.distribution[
+        i,
+        assay2.probabilities.allele.best == assay2.allele.name[i]
+      ]
+    ) / (assay2.allele.frequencies[i]*1000)
+  )
+}
+
+assay2.tpr = sum(assay2.allele.tpr * assay2.allele.frequencies)
+```
+
+## Results
+
+All results are plotted
+
+```{r}
+# Assay 2 results
+plot(
+  assay2.x,
+  assay2.probability.detection,
+  type="l",
+  col="black",
+  ylim=c(0,1),
+  xlab="TM",
+  ylab="Probability"
+)
+title("Assay 2", line=3)
+axis(assay2.allele.name, at=assay2.allele.mean, side=3)
+mtext("Allele", side=3, line=2)
+lines(assay2.x, assay2.probability.sensitivity, type="l", col="purple")
+legend("topright", 
+       legend=c("Allele detection", "Allele called correctly"), 
+       text.col=c("black", "purple")
+)
+```
+
+\newpage
+
+# Assay combination
+
+Results of both assay are combined.
+
+## Setup
+
+All data is collected.
+
+```{r}
+# Assay combination
+assay_combination = data[
+  c(
+    "Allele",
+    "Assay_combination_callable",
+    "Population_frequency",
+    "Corresponding_allele_in_Assay_1",
+    "Corresponding_allele_in_Assay_2"
+  )
+]
+assay_combination.callable = c(assay_combination["Assay_combination_callable"]=="+")
+assay_combination.allele.name = unlist(assay_combination[assay_combination.callable, "Allele"])
+assay_combination.allele.frequencies = as.numeric(
+  unlist(assay_combination[assay_combination.callable, "Population_frequency"])
+)
+assay_combination.allele.from_assay_1 = unlist(
+  assay_combination[assay_combination.callable, "Corresponding_allele_in_Assay_1"]
+)
+assay_combination.allele.from_assay_2 = unlist(
+  assay_combination[assay_combination.callable, "Corresponding_allele_in_Assay_2"]
+)
+```
+
+## Results
+
+TPR is calculated by combining assay 1 and assay 2.
+
+TODO: Make tables for all alleles and their individual tprs
+
+```{r}
+# Assay combination results
+assay_combination.allele.tpr = apply(
+  cbind(assay_combination.allele.from_assay_1, assay_combination.allele.from_assay_2),
+  1,
+  function(y) assay1.allele.tpr[assay1.allele.name == y[1]] * assay2.allele.tpr[assay2.allele.name == y[2]]
+)
+
+assay_combination.tpr = sum(assay_combination.allele.tpr * assay_combination.allele.frequencies)
+
+result.table = cbind(
+  data[,1:2],
+  as.numeric(
+    sapply(
+      data[,1],
+      function(y) assay1.allele.tpr[assay1.allele.name == y]
+    )
+  ),
+  as.numeric(
+    sapply(
+      data[,1],
+      function(y) assay2.allele.tpr[assay2.allele.name == y]
+    )
+  ),
+  as.numeric(
+    sapply(
+      data[,1],
+      function(y) assay_combination.allele.tpr[assay_combination.allele.name == y]
+    )
+  )
+)
+
+colnames(result.table) = c(
+  "Allele",
+  "Frequency",
+  "TPR Assay 1",
+  "TPR Assay 2",
+  "TPR Assay combination"
+)
+
+kable(
+  rbind(result.table, c("All", 1, assay1.tpr, assay2.tpr, assay_combination.tpr)),
+  align ="c",
+)
+```
+
+\newpage
+
+# R session information and parameters
+
+All R info to reproduce the results.
+
+```{r , cache=TRUE, echo=FALSE, results="asis"}
+si <- as.character(toLatex(sessionInfo()))
+si <- si[-c(1,length(si))]
+si <- gsub("(\\\\verb)|(\\|)", "", si)
+si <- gsub("~", " ", si)
+si <- paste(si, collapse=" ")
+si <- unlist(strsplit(si, "\\\\item"))
+cat(paste(si, collapse="\n -"), "\n")
+```
