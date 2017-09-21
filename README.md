@@ -1,11 +1,14 @@
 # STaRchip
 
-## R-script
-Analysis of off-chip forensic Hybeacon data
+## hipSTR-script
+R-script designed to analyze forensic STaR-Chip data
+
 ## Setup
 Assay 1 + 
 Assay 2 + 
 Assay 3 + 
+Assay 4 +
+Assay 5 
 = Combined TDR
 
 
@@ -14,7 +17,11 @@ Assay 3 +
  D8S1179 
  D16S51
  D18S51
+ TH01
+ Amelogenine
+ 
 ### Allele Frequencies
+
 D8S1179
 
  8 	 0.010 	
@@ -74,5 +81,23 @@ D16S51
  25 	 0.000 	
  28 	 0.000 	
 
+TH01
 
+ 5 	 0.003 	
+ 6 	 0.215 	
+ 7 	 0.249 
+ 8 	 0.120 	
+ 9 	 0.176 	
+ 9.3 	 0.229 	
+ 10 	 0.007 
+ 11 	 0.001 
+ 12 	 0.00
+ 
+ Amelogeine
+ 
+ XX
+ XY
+ 
 ###Results
+
+
